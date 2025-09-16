@@ -2,6 +2,9 @@ pipeline {
     agent any
     
     environment {
+        // Project configuration
+        PROJECT_FOLDER = 'template2'
+        
         // Firebase project configuration
         FIREBASE_PROJECT = 'jenkins-firebase-87e2d'
         
@@ -32,10 +35,10 @@ pipeline {
                     echo "Current directory: $(pwd)"
                     echo "Listing contents:"
                     ls -la
-                    echo "Checking for package.json in web-performance-project1-initial:"
-                    ls -la web-performance-project1-initial/ || echo "Directory not found"
+                    echo "Checking for package.json in ${PROJECT_FOLDER}:"
+                    ls -la ${PROJECT_FOLDER}/ || echo "Directory not found"
                 '''
-                dir('web-performance-project1-initial') {
+                dir(env.PROJECT_FOLDER) {
                     sh '''
                         echo "Installing Node.js dependencies..."
                         echo "Current directory: $(pwd)"
@@ -53,7 +56,7 @@ pipeline {
                 script {
                     echo "Starting lint and test stage..."
                 }
-                dir('web-performance-project1-initial') {
+                dir(env.PROJECT_FOLDER) {
                     sh '''
                         echo "Running linting and tests..."
                         echo "Current directory: $(pwd)"
@@ -67,11 +70,11 @@ pipeline {
             post {
                 always {
                     // Publish test results
-                    publishTestResults testResultsPattern: 'web-performance-project1-initial/coverage/test-results.xml'
+                    publishTestResults testResultsPattern: '${PROJECT_FOLDER}/coverage/test-results.xml'
                     
                     // Publish coverage reports
                     publishCoverage adapters: [
-                        coberturaAdapter('web-performance-project1-initial/coverage/cobertura-coverage.xml')
+                        coberturaAdapter('${PROJECT_FOLDER}/coverage/cobertura-coverage.xml')
                     ], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
                 }
             }
@@ -96,7 +99,7 @@ pipeline {
                 script {
                     echo "Starting Firebase deployment..."
                 }
-                dir('web-performance-project1-initial') {
+                dir(env.PROJECT_FOLDER) {
                     sh '''
                         echo "Deploying to Firebase project: ${FIREBASE_PROJECT}"
                         echo "Current directory: $(pwd)"
