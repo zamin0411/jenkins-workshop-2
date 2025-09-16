@@ -16,8 +16,7 @@ services:
       - ./template:/usr/share/nginx/html/jenkins/template
       - ./ansible:/ansible
       - ./deploy-script.sh:/usr/share/nginx/html/jenkins/deploy-script.sh
-      - ./newbie_id_rsa:/root/.ssh/newbie_id_rsa
-      - ./newbie_id_rsa.pub:/root/.ssh/newbie_id_rsa.pub
+      - ./ssh-keys:/root/.ssh
     environment:
       - JENKINS_OPTS=--prefix=/jenkins
     user: root

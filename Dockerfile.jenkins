@@ -9,7 +9,17 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     openssh-client \
     rsync \
+    curl \
+    gnupg \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 18.x
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Firebase CLI globally
+RUN npm install -g firebase-tools
 
 # Install ansible using Python virtual environment
 RUN python3 -m venv /opt/ansible \

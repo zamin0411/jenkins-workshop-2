@@ -7,6 +7,7 @@ pipeline {
         
         // Firebase project configuration
         FIREBASE_PROJECT = 'jenkins-firebase-87e2d'
+        FIREBASE_SERVICE_ACCOUNT_FILE = 'firebase-service-account.json'
         
         // Ansible configuration
         ANSIBLE_HOSTS = 'ansible/hosts'
@@ -15,7 +16,7 @@ pipeline {
         // Node.js configuration
         NODE_VERSION = '18'
     }
-    
+     
     stages {
         stage('Checkout') {
             steps {
@@ -86,6 +87,26 @@ pipeline {
             }
         }
         
+        stage('Setup Firebase Credentials') {
+            steps {
+                script {
+                    echo "Setting up Firebase service account credentials from Jenkins credentials store..."
+                }
+                dir(env.PROJECT_FOLDER) {
+                    withCredentials([file(credentialsId: 'firebase-service-account', variable: 'FIREBASE_CREDENTIALS_FILE')]) {
+                        sh '''
+                            echo "Copying Firebase service account from credentials store"
+                            cp ${FIREBASE_CREDENTIALS_FILE} ${FIREBASE_SERVICE_ACCOUNT_FILE}
+                            echo "Setting proper permissions for service account file"
+                            chmod 600 ${FIREBASE_SERVICE_ACCOUNT_FILE}
+                            echo "Verifying service account file:"
+                            ls -la ${FIREBASE_SERVICE_ACCOUNT_FILE}
+                        '''
+                    }
+                }
+            }
+        }
+        
         stage('Deploy to Firebase') {
             steps {
                 script {
@@ -97,8 +118,18 @@ pipeline {
                         echo "Current directory: $(pwd)"
                         echo "Checking for firebase.json:"
                         ls -la firebase.json || echo "firebase.json not found"
+                        echo "Checking for service account file:"
+                        ls -la ${FIREBASE_SERVICE_ACCOUNT_FILE}
+                        
+                        # Set Firebase service account environment variable
+                        export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/${FIREBASE_SERVICE_ACCOUNT_FILE}"
+                        echo "GOOGLE_APPLICATION_CREDENTIALS set to: ${GOOGLE_APPLICATION_CREDENTIALS}"
+                        
+                        # Use Firebase project
                         firebase use ${FIREBASE_PROJECT}
-                        firebase deploy --only hosting
+                        
+                        # Deploy to Firebase hosting
+                        firebase deploy --only hosting --token ${FIREBASE_TOKEN:-}
                         echo "Firebase deployment completed!"
                     '''
                 }
@@ -110,6 +141,16 @@ pipeline {
         always {
             script {
                 echo "Pipeline execution completed!"
+            }
+            // Clean up Firebase service account file
+            dir(env.PROJECT_FOLDER) {
+                sh '''
+                    if [ -f "${FIREBASE_SERVICE_ACCOUNT_FILE}" ]; then
+                        echo "Cleaning up Firebase service account file for security"
+                        rm -f ${FIREBASE_SERVICE_ACCOUNT_FILE}
+                        echo "Service account file removed"
+                    fi
+                '''
             }
             // Clean up workspace
             cleanWs()
