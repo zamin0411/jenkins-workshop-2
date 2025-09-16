@@ -42,9 +42,6 @@ pipeline {
                 dir(env.PROJECT_FOLDER) {
                     sh '''
                         echo "Installing Node.js dependencies..."
-                        echo "Current directory: $(pwd)"
-                        echo "Checking for package.json:"
-                        ls -la package.json || echo "package.json not found"
                         npm install
                         echo "Build completed successfully!"
                     '''
@@ -60,10 +57,7 @@ pipeline {
                 dir(env.PROJECT_FOLDER) {
                     sh '''
                         echo "Running linting and tests..."
-                        echo "Current directory: $(pwd)"
-                        echo "Checking for package.json:"
-                        ls -la package.json || echo "package.json not found"
-                        
+
                         # Run tests
                         npm run test:ci || echo "Tests completed with some failures"
                         
@@ -84,6 +78,41 @@ pipeline {
                     ansible-playbook -i hosts deploy.yml
                     echo "Remote server deployment completed!"
                 '''
+            }
+            post {
+                success {
+                    slackSend (
+                        channel: '#lnd-2025-workshop',
+                        color: 'good',
+                        message: """
+                        ✅ *Remote Server Deployment Successful*
+                        
+                        *Project:* ${env.JOB_NAME}
+                        *Build:* #${env.BUILD_NUMBER}
+                        *User:* ${env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                        *Stage:* Deploy to Remote Server
+                        
+                        *Build URL:* ${env.BUILD_URL}
+                        """
+                    )
+                }
+                failure {
+                    slackSend (
+                        channel: '#lnd-2025-workshop',
+                        color: 'danger',
+                        message: """
+                        ❌ *Remote Server Deployment Failed*
+                        
+                        *Project:* ${env.JOB_NAME}
+                        *Build:* #${env.BUILD_NUMBER}
+                        *User:* ${env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                        *Stage:* Deploy to Remote Server
+                        
+                        *Build URL:* ${env.BUILD_URL}
+                        *Console Output:* ${env.BUILD_URL}console
+                        """
+                    )
+                }
             }
         }
         
@@ -132,6 +161,43 @@ pipeline {
                         firebase deploy --only hosting --project ${FIREBASE_PROJECT}
                         echo "Firebase deployment completed!"
                     '''
+                }
+            }
+            post {
+                success {
+                    slackSend (
+                        channel: '#lnd-2025-workshop',
+                        color: 'good',
+                        message: """
+                        ✅ *Firebase Deployment Successful*
+                        
+                        *Project:* ${env.JOB_NAME}
+                        *Build:* #${env.BUILD_NUMBER}
+                        *User:* ${env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                        *Stage:* Deploy to Firebase
+                        *Firebase Project:* ${FIREBASE_PROJECT}
+                        
+                        *Build URL:* ${env.BUILD_URL}
+                        """
+                    )
+                }
+                failure {
+                    slackSend (
+                        channel: '#lnd-2025-workshop',
+                        color: 'danger',
+                        message: """
+                        ❌ *Firebase Deployment Failed*
+                        
+                        *Project:* ${env.JOB_NAME}
+                        *Build:* #${env.BUILD_NUMBER}
+                        *User:* ${env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                        *Stage:* Deploy to Firebase
+                        *Firebase Project:* ${FIREBASE_PROJECT}
+                        
+                        *Build URL:* ${env.BUILD_URL}
+                        *Console Output:* ${env.BUILD_URL}console
+                        """
+                    )
                 }
             }
         }

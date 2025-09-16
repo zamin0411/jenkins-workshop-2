@@ -3,7 +3,7 @@
   hosts: all
   become: no
   vars:
-    deploy_date: "{{ '%04d%02d%02d' | format(ansible_date_time.year | int, ansible_date_time.month | int, ansible_date_time.day | int) }}"
+    deploy_date: "{{ '%04d%02d%02d%02d%02d' | format(ansible_date_time.year | int, ansible_date_time.month | int, ansible_date_time.day | int, ansible_date_time.hour | int, ansible_date_time.minute | int) }}"
     deploy_user: "{{ ansible_user | default('newbie') }}"
     deploy_path: "/usr/share/nginx/html/jenkins/{{ ansible_user_folder | default('manhg2') }}"
     jenkins_job_name: "{{ ansible_user_folder | default('manhg2') }}"
