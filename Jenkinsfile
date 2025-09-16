@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         // Project configuration
-        PROJECT_FOLDER = 'template2'
+        PROJECT_FOLDER = 'web-performance-project1-initial'
         
         // Firebase project configuration
         FIREBASE_PROJECT = 'jenkins-firebase-87e2d'
