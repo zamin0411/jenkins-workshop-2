@@ -70,15 +70,6 @@ pipeline {
                     '''
                 }
             }
-            post {
-                always {
-                    // Publish JUnit test results
-                    junit '**/test-results.xml'
-                    
-                    // Archive test results for display
-                    archiveArtifacts artifacts: '${PROJECT_FOLDER}/coverage/*', allowEmptyArchive: true
-                }
-            }
         }
         
         stage('Deploy to Remote Server') {
