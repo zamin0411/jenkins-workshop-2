@@ -1,0 +1,49 @@
+name: Webhook Trigger Jenkins
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  webhook-trigger:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Trigger Jenkins via Webhook
+      run: |
+        curl -X POST \
+          -H "Authorization: Bearer ${{ secrets.JENKINS_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "parameter": [
+              {"name": "BRANCH_NAME", "value": "${{ github.ref_name }}"},
+              {"name": "GIT_COMMIT", "value": "${{ github.sha }}"},
+              {"name": "GIT_URL", "value": "${{ github.server_url }}/${{ github.repository }}"},
+              {"name": "BUILD_CAUSE", "value": "github-actions"},
+              {"name": "DEPLOY_ENVIRONMENT", "value": "${{ github.ref_name == 'main' && 'production' || 'staging' }}"}
+            ]
+          }' \
+          "${{ secrets.JENKINS_URL }}/job/${{ secrets.JENKINS_JOB_NAME }}/buildWithParameters"
+          
+    - name: Wait for build to start
+      run: sleep 10
+      
+    - name: Get latest build number
+      id: build-info
+      run: |
+        BUILD_NUMBER=$(curl -s -H "Authorization: Bearer ${{ secrets.JENKINS_TOKEN }}" \
+          "${{ secrets.JENKINS_URL }}/job/${{ secrets.JENKINS_JOB_NAME }}/lastBuild/buildNumber")
+        echo "build-number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+        echo "Build URL: ${{ secrets.JENKINS_URL }}/job/${{ secrets.JENKINS_JOB_NAME }}/$BUILD_NUMBER/"
+        
+    - name: Monitor build status
+      run: |
+        echo "Monitoring Jenkins build #${{ steps.build-info.outputs.build-number }}"
+        echo "Build URL: ${{ secrets.JENKINS_URL }}/job/${{ secrets.JENKINS_JOB_NAME }}/${{ steps.build-info.outputs.build-number }}/"
+        echo "Check the Jenkins console for detailed logs"
