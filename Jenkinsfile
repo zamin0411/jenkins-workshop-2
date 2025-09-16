@@ -204,7 +204,7 @@ pipeline {
                     
                     *Project:* ${env.JOB_NAME}
                     *Build:* #${env.BUILD_NUMBER}
-                    *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                    *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'manhg'}
                     *Branch:* ${env.BRANCH_NAME ?: 'main'}
                     *Duration:* ${currentBuild.durationString}
                     
@@ -238,9 +238,8 @@ pipeline {
                     
                     *Project:* ${env.JOB_NAME}
                     *Build:* #${env.BUILD_NUMBER}
-                    *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                    *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'manhg'}
                     *Branch:* ${env.BRANCH_NAME ?: 'main'}
-                    *Failed Stage:* ${env.STAGE_NAME ?: 'Unknown'}
                     *Duration:* ${currentBuild.durationString}
                     
                     *Error Details:*
