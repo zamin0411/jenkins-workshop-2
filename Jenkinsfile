@@ -28,9 +28,19 @@ pipeline {
                 script {
                     echo "Starting build stage..."
                 }
+                sh '''
+                    echo "Current directory: $(pwd)"
+                    echo "Listing contents:"
+                    ls -la
+                    echo "Checking for package.json in web-performance-project1-initial:"
+                    ls -la web-performance-project1-initial/ || echo "Directory not found"
+                '''
                 dir('web-performance-project1-initial') {
                     sh '''
                         echo "Installing Node.js dependencies..."
+                        echo "Current directory: $(pwd)"
+                        echo "Checking for package.json:"
+                        ls -la package.json || echo "package.json not found"
                         npm install
                         echo "Build completed successfully!"
                     '''
@@ -46,6 +56,9 @@ pipeline {
                 dir('web-performance-project1-initial') {
                     sh '''
                         echo "Running linting and tests..."
+                        echo "Current directory: $(pwd)"
+                        echo "Checking for package.json:"
+                        ls -la package.json || echo "package.json not found"
                         npm run test:ci
                         echo "Lint and test completed successfully!"
                     '''
@@ -86,6 +99,9 @@ pipeline {
                 dir('web-performance-project1-initial') {
                     sh '''
                         echo "Deploying to Firebase project: ${FIREBASE_PROJECT}"
+                        echo "Current directory: $(pwd)"
+                        echo "Checking for firebase.json:"
+                        ls -la firebase.json || echo "firebase.json not found"
                         firebase use ${FIREBASE_PROJECT}
                         firebase deploy --only hosting
                         echo "Firebase deployment completed!"
