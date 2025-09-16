@@ -121,41 +121,6 @@ pipeline {
                     echo "Remote server deployment completed!"
                 '''
             }
-            post {
-                success {
-                    slackSend (
-                        channel: '#lnd-2025-workshop',
-                        color: 'good',
-                        message: """
-                        ✅ *Remote Server Deployment Successful*
-                        
-                        *Project:* ${env.JOB_NAME}
-                        *Build:* #${env.BUILD_NUMBER}
-                        *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
-                        *Stage:* Deploy to Remote Server
-                        
-                        *Build URL:* ${env.BUILD_URL}
-                        """
-                    )
-                }
-                failure {
-                    slackSend (
-                        channel: '#lnd-2025-workshop',
-                        color: 'danger',
-                        message: """
-                        ❌ *Remote Server Deployment Failed*
-                        
-                        *Project:* ${env.JOB_NAME}
-                        *Build:* #${env.BUILD_NUMBER}
-                        *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
-                        *Stage:* Deploy to Remote Server
-                        
-                        *Build URL:* ${env.BUILD_URL}
-                        *Console Output:* ${env.BUILD_URL}console
-                        """
-                    )
-                }
-            }
         }
         
         stage('Setup Firebase Credentials') {
@@ -205,43 +170,6 @@ pipeline {
                     '''
                 }
             }
-            post {
-                success {
-                    slackSend (
-                        channel: '#lnd-2025-workshop',
-                        color: 'good',
-                        message: """
-                        ✅ *Firebase Deployment Successful*
-                        
-                        *Project:* ${env.JOB_NAME}
-                        *Build:* #${env.BUILD_NUMBER}
-                        *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
-                        *Stage:* Deploy to Firebase
-                        *Firebase Project:* ${FIREBASE_PROJECT}
-                        
-                        *Build URL:* ${env.BUILD_URL}
-                        """
-                    )
-                }
-                failure {
-                    slackSend (
-                        channel: '#lnd-2025-workshop',
-                        color: 'danger',
-                        message: """
-                        ❌ *Firebase Deployment Failed*
-                        
-                        *Project:* ${env.JOB_NAME}
-                        *Build:* #${env.BUILD_NUMBER}
-                        *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
-                        *Stage:* Deploy to Firebase
-                        *Firebase Project:* ${FIREBASE_PROJECT}
-                        
-                        *Build URL:* ${env.BUILD_URL}
-                        *Console Output:* ${env.BUILD_URL}console
-                        """
-                    )
-                }
-            }
         }
     }
     
@@ -266,28 +194,62 @@ pipeline {
         success {
             script {
                 echo "All stages completed successfully!"
-                // Send success notification (optional)
-                // emailext (
-                //     subject: "Deployment Successful - ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                //     body: "The deployment pipeline completed successfully.",
-                //     to: "your-email@example.com"
-                // )
+                
+                // Send comprehensive success notification
+                slackSend (
+                    channel: '#lnd-2025-workshop',
+                    color: 'good',
+                    message: """
+                    🚀 *Pipeline Execution Successful*
+                    
+                    *Project:* ${env.JOB_NAME}
+                    *Build:* #${env.BUILD_NUMBER}
+                    *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                    *Branch:* ${env.BRANCH_NAME ?: 'main'}
+                    *Duration:* ${currentBuild.durationString}
+                    
+                    *Completed Stages:*
+                    ✅ Checkout
+                    ✅ Build
+                    ✅ Lint
+                    ✅ Test
+                    ✅ Deploy to Remote Server
+                    ✅ Deploy to Firebase
+                    
+                    *Deployments:*
+                    • Remote Server: ✅ Completed
+                    • Firebase Hosting: ✅ Completed
+                    
+                    *Build URL:* ${env.BUILD_URL}
+                    """
+                )
             }
         }
         failure {
             script {
                 echo "Pipeline failed at stage: ${env.STAGE_NAME}"
-                // Send failure notification (optional)
-                // emailext (
-                //     subject: "Deployment Failed - ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                //     body: "The deployment pipeline failed at stage: ${env.STAGE_NAME}",
-                //     to: "your-email@example.com"
-                // )
-            }
-        }
-        unstable {
-            script {
-                echo "Pipeline completed with warnings!"
+                
+                // Send comprehensive failure notification
+                slackSend (
+                    channel: '#lnd-2025-workshop',
+                    color: 'danger',
+                    message: """
+                    ❌ *Pipeline Execution Failed*
+                    
+                    *Project:* ${env.JOB_NAME}
+                    *Build:* #${env.BUILD_NUMBER}
+                    *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                    *Branch:* ${env.BRANCH_NAME ?: 'main'}
+                    *Failed Stage:* ${env.STAGE_NAME ?: 'Unknown'}
+                    *Duration:* ${currentBuild.durationString}
+                    
+                    *Error Details:*
+                    Check the build logs for more information.
+                    
+                    *Build URL:* ${env.BUILD_URL}
+                    *Console Output:* ${env.BUILD_URL}console
+                    """
+                )
             }
         }
     }
