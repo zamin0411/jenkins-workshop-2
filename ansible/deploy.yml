@@ -6,7 +6,8 @@
     deploy_date: "{{ '%04d%02d%02d' | format(ansible_date_time.year | int, ansible_date_time.month | int, ansible_date_time.day | int) }}"
     deploy_user: "{{ ansible_user | default('newbie') }}"
     deploy_path: "/usr/share/nginx/html/jenkins/{{ ansible_user_folder | default('manhg2') }}"
-    template_path: "/usr/share/nginx/html/jenkins/template2"
+    jenkins_job_name: "{{ ansible_user_folder | default('manhg2') }}"
+    source_project_path: "/var/jenkins_home/workspace/workshop2/web-performance-project1-initial"
     project_folder: "web-performance-project1-initial"
     deploy_folder: "{{ deploy_path }}/deploy/{{ deploy_date }}"
     max_releases: 5
@@ -15,7 +16,8 @@
     - name: Debug paths
       debug:
         msg: |
-          Template path: {{ template_path }}
+          Jenkins job name: {{ jenkins_job_name }}
+          Source project path: {{ source_project_path }}
           Deploy path: {{ deploy_path }}
           Project folder: {{ project_folder }}
           Deploy folder: {{ deploy_folder }}
@@ -49,18 +51,49 @@
         owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
         group: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
 
-    - name: Copy template to project directory
-      copy:
-        src: "{{ template_path }}/"
-        dest: "{{ deploy_path }}/{{ project_folder }}"
-        mode: '0755'
-        owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
-        group: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
-      register: template_copy_result
+    - name: List Jenkins workspace directories
+      command: ls -la /var/jenkins_home/workspace/
+      register: workspace_list
+      ignore_errors: true
 
-    - name: Debug template copy result
+    - name: Debug workspace directories
       debug:
-        var: template_copy_result
+        var: workspace_list.stdout_lines
+
+    - name: Check if source project exists
+      stat:
+        path: "{{ source_project_path }}"
+      register: source_project_stat
+
+    - name: Debug source project check
+      debug:
+        msg: "Source project exists: {{ source_project_stat.stat.exists }}"
+
+    - name: Find correct workspace path
+      find:
+        paths: "/var/jenkins_home/workspace"
+        patterns: "*"
+        file_type: directory
+      register: workspace_dirs
+      when: not source_project_stat.stat.exists
+
+    - name: Debug found workspace directories
+      debug:
+        var: workspace_dirs.files
+      when: not source_project_stat.stat.exists
+
+    - name: Set dynamic source path
+      set_fact:
+        source_project_path: "{{ item.path }}/web-performance-project1-initial"
+      when: not source_project_stat.stat.exists
+      loop: "{{ workspace_dirs.files | default([]) }}"
+      register: dynamic_paths
+      ignore_errors: true
+
+    - name: Debug dynamic source paths
+      debug:
+        var: dynamic_paths.results
+      when: not source_project_stat.stat.exists
 
     - name: Create deploy directory
       file:
@@ -72,7 +105,7 @@
 
     - name: Copy index.html
       copy:
-        src: "{{ template_path }}/index.html"
+        src: "{{ source_project_path }}/index.html"
         dest: "{{ deploy_folder }}/index.html"
         mode: '0644'
         owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
@@ -80,7 +113,7 @@
 
     - name: Copy 404.html
       copy:
-        src: "{{ template_path }}/404.html"
+        src: "{{ source_project_path }}/404.html"
         dest: "{{ deploy_folder }}/404.html"
         mode: '0644'
         owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
@@ -88,7 +121,7 @@
 
     - name: Copy css directory
       copy:
-        src: "{{ template_path }}/css/"
+        src: "{{ source_project_path }}/css/"
         dest: "{{ deploy_folder }}/css/"
         mode: '0755'
         owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
@@ -96,7 +129,7 @@
 
     - name: Copy js directory
       copy:
-        src: "{{ template_path }}/js/"
+        src: "{{ source_project_path }}/js/"
         dest: "{{ deploy_folder }}/js/"
         mode: '0755'
         owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
@@ -104,16 +137,16 @@
 
     - name: Copy images directory
       copy:
-        src: "{{ template_path }}/images/"
+        src: "{{ source_project_path }}/images/"
         dest: "{{ deploy_folder }}/images/"
         mode: '0755'
         owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
         group: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
 
     - name: Run test script (if exists)
-      command: "{{ deploy_path }}/{{ project_folder }}/test/test.sh"
+      command: "{{ source_project_path }}/test/test.sh"
       args:
-        chdir: "{{ deploy_path }}/{{ project_folder }}"
+        chdir: "{{ source_project_path }}"
       register: test_result
       failed_when: test_result.rc != 0
       ignore_errors: true
