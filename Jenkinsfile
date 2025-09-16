@@ -73,7 +73,7 @@ pipeline {
             post {
                 always {
                     // Publish JUnit test results
-                    junit testResultsPattern: '${PROJECT_FOLDER}/coverage/test-results.xml'
+                    junit '**/test-results.xml'
                     
                     // Archive test results for display
                     archiveArtifacts artifacts: '${PROJECT_FOLDER}/coverage/*', allowEmptyArchive: true
