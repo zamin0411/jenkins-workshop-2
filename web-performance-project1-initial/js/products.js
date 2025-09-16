@@ -66,22 +66,3 @@ function displayProducts(products) {
 
 
 loadProducts();
-
-// Lint errors introduced:
-var unusedVariable = "this will cause a lint error";
-let anotherUnusedVar = 42;
-const yetAnotherUnused = true;
-
-// Missing semicolon (if configured)
-var noSemicolon = "missing semicolon"
-
-// Unreachable code after return
-function badFunction() {
-    return "this returns";
-    console.log("this will never execute"); // unreachable code
-}
-
-// Using undefined variable
-function useUndefined() {
-    return someUndefinedVariable + 5;
-}
