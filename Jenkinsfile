@@ -129,7 +129,7 @@ pipeline {
                         firebase use ${FIREBASE_PROJECT}
                         
                         # Deploy to Firebase hosting
-                        firebase deploy --only hosting --token ${FIREBASE_TOKEN:-}
+                        firebase deploy --only hosting --project ${FIREBASE_PROJECT}
                         echo "Firebase deployment completed!"
                     '''
                 }
