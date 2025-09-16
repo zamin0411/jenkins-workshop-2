@@ -67,7 +67,21 @@ function displayProducts(products) {
 
 loadProducts();
 
-// Simulate heavy operation. It could be a complex price calculation.
-for (let i = 0; i < 10000000; i++) {
-    const temp = Math.sqrt(i) * Math.sqrt(i);
+// Lint errors introduced:
+var unusedVariable = "this will cause a lint error";
+let anotherUnusedVar = 42;
+const yetAnotherUnused = true;
+
+// Missing semicolon (if configured)
+var noSemicolon = "missing semicolon"
+
+// Unreachable code after return
+function badFunction() {
+    return "this returns";
+    console.log("this will never execute"); // unreachable code
+}
+
+// Using undefined variable
+function useUndefined() {
+    return someUndefinedVariable + 5;
 }
