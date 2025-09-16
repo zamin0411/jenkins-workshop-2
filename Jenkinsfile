@@ -49,19 +49,61 @@ pipeline {
             }
         }
         
-        stage('Lint & Test') {
+        stage('Lint') {
             steps {
                 script {
-                    echo "Starting lint and test stage..."
+                    echo "Starting lint stage..."
                 }
                 dir(env.PROJECT_FOLDER) {
                     sh '''
-                        echo "Running linting and tests..."
-
-                        # Run tests
-                        npm run test:ci || echo "Tests completed with some failures"
+                        echo "Running linting..."
+                        echo "Current directory: $(pwd)"
+                        echo "Checking for package.json:"
+                        ls -la package.json || echo "package.json not found"
                         
-                        echo "Lint and test completed successfully!"
+                        # Run linting and capture exit code
+                        set +e
+                        npm run lint
+                        LINT_EXIT_CODE=$?
+                        set -e
+                        
+                        # Check if linting failed
+                        if [ $LINT_EXIT_CODE -ne 0 ]; then
+                            echo "❌ Linting failed with exit code: $LINT_EXIT_CODE"
+                            echo "Build will fail due to linting errors/warnings"
+                            exit $LINT_EXIT_CODE
+                        fi
+                        
+                        echo "✅ Linting passed successfully!"
+                    '''
+                }
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                script {
+                    echo "Starting test stage..."
+                }
+                dir(env.PROJECT_FOLDER) {
+                    sh '''
+                        echo "Running tests..."
+                        echo "Current directory: $(pwd)"
+                        
+                        # Run tests and capture exit code
+                        set +e
+                        npm run test:ci
+                        TEST_EXIT_CODE=$?
+                        set -e
+                        
+                        # Check if tests failed
+                        if [ $TEST_EXIT_CODE -ne 0 ]; then
+                            echo "❌ Tests failed with exit code: $TEST_EXIT_CODE"
+                            echo "Build will fail due to test failures"
+                            exit $TEST_EXIT_CODE
+                        fi
+                        
+                        echo "✅ All tests passed successfully!"
                     '''
                 }
             }
@@ -89,7 +131,7 @@ pipeline {
                         
                         *Project:* ${env.JOB_NAME}
                         *Build:* #${env.BUILD_NUMBER}
-                        *User:* ${env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                        *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
                         *Stage:* Deploy to Remote Server
                         
                         *Build URL:* ${env.BUILD_URL}
@@ -105,7 +147,7 @@ pipeline {
                         
                         *Project:* ${env.JOB_NAME}
                         *Build:* #${env.BUILD_NUMBER}
-                        *User:* ${env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                        *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
                         *Stage:* Deploy to Remote Server
                         
                         *Build URL:* ${env.BUILD_URL}
@@ -173,7 +215,7 @@ pipeline {
                         
                         *Project:* ${env.JOB_NAME}
                         *Build:* #${env.BUILD_NUMBER}
-                        *User:* ${env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                        *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
                         *Stage:* Deploy to Firebase
                         *Firebase Project:* ${FIREBASE_PROJECT}
                         
@@ -190,7 +232,7 @@ pipeline {
                         
                         *Project:* ${env.JOB_NAME}
                         *Build:* #${env.BUILD_NUMBER}
-                        *User:* ${env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
+                        *User:* ${env.GIT_AUTHOR_NAME ?: env.CHANGE_AUTHOR ?: env.BUILD_USER ?: 'System'}
                         *Stage:* Deploy to Firebase
                         *Firebase Project:* ${FIREBASE_PROJECT}
                         
