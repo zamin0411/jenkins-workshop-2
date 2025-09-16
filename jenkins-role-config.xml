@@ -1,0 +1,65 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<roleStrategy>
+  <roles>
+    <role>
+      <name>admin</name>
+      <description>Full access to all Jenkins features</description>
+      <permissions>
+        <permission>hudson.model.Hudson.Administer</permission>
+        <permission>hudson.model.Hudson.Read</permission>
+        <permission>hudson.model.Item.Build</permission>
+        <permission>hudson.model.Item.Delete</permission>
+        <permission>hudson.model.Item.Configure</permission>
+        <permission>hudson.model.Item.Create</permission>
+        <permission>hudson.model.Item.Read</permission>
+        <permission>hudson.model.Item.Workspace</permission>
+        <permission>hudson.model.Item.Move</permission>
+        <permission>hudson.model.Item.Discover</permission>
+        <permission>hudson.model.Item.Cancel</permission>
+        <permission>hudson.model.Run.Delete</permission>
+        <permission>hudson.model.Run.Update</permission>
+        <permission>hudson.scm.SCM.Tag</permission>
+        <permission>hudson.model.View.Create</permission>
+        <permission>hudson.model.View.Delete</permission>
+        <permission>hudson.model.View.Configure</permission>
+        <permission>hudson.model.View.Read</permission>
+      </permissions>
+      <assignedSIDs>
+        <sid>admin</sid>
+      </assignedSIDs>
+    </role>
+    <role>
+      <name>developer</name>
+      <description>Can build and view jobs</description>
+      <permissions>
+        <permission>hudson.model.Hudson.Read</permission>
+        <permission>hudson.model.Item.Build</permission>
+        <permission>hudson.model.Item.Configure</permission>
+        <permission>hudson.model.Item.Read</permission>
+        <permission>hudson.model.Item.Workspace</permission>
+        <permission>hudson.model.Item.Discover</permission>
+        <permission>hudson.model.Item.Cancel</permission>
+        <permission>hudson.model.Run.Update</permission>
+        <permission>hudson.model.View.Read</permission>
+      </permissions>
+      <assignedSIDs>
+        <sid>dev1</sid>
+        <sid>dev2</sid>
+        <sid>dev3</sid>
+      </assignedSIDs>
+    </role>
+    <role>
+      <name>viewer</name>
+      <description>Read-only access</description>
+      <permissions>
+        <permission>hudson.model.Hudson.Read</permission>
+        <permission>hudson.model.Item.Read</permission>
+        <permission>hudson.model.View.Read</permission>
+      </permissions>
+      <assignedSIDs>
+        <sid>viewer1</sid>
+        <sid>viewer2</sid>
+      </assignedSIDs>
+    </role>
+  </roles>
+</roleStrategy>

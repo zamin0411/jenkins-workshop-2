@@ -1,0 +1,48 @@
+
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
+    container_name: jenkins
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./template:/usr/share/nginx/html/jenkins/template
+      - ./ansible:/ansible
+      - ./deploy-script.sh:/usr/share/nginx/html/jenkins/deploy-script.sh
+      - ./newbie_id_rsa:/root/.ssh/newbie_id_rsa
+      - ./newbie_id_rsa.pub:/root/.ssh/newbie_id_rsa.pub
+    environment:
+      - JENKINS_OPTS=--prefix=/jenkins
+    user: root
+    networks:
+      - jenkins_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./template:/usr/share/nginx/html/jenkins/template
+      - ./deploy:/usr/share/nginx/html/jenkins
+      - ./index.html:/usr/share/nginx/html/index.html
+    depends_on:
+      - jenkins
+    networks:
+      - jenkins_network
+
+volumes:
+  jenkins_home:
+
+networks:
+  jenkins_network:
+    driver: bridge

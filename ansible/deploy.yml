@@ -1,0 +1,111 @@
+---
+- name: Deploy application
+  hosts: all
+  become: no
+  vars:
+    deploy_timestamp: "{{ '%04d%02d%02d%02d%02d%02d' | format(ansible_date_time.year | int, ansible_date_time.month | int, ansible_date_time.day | int, ansible_date_time.hour | int, ansible_date_time.minute | int, ansible_date_time.second | int) }}"
+    deploy_user: "{{ ansible_user | default('newbie') }}"
+    deploy_path: "/usr/share/nginx/html/jenkins/{{ ansible_user_folder | default('manhg') }}"
+    template_path: "/usr/share/nginx/html/jenkins/template"
+    deploy_folder: "{{ deploy_path }}/deploy/{{ deploy_timestamp }}"
+    max_releases: 5
+
+  tasks:
+    - name: Debug paths
+      debug:
+        msg: |
+          Template path: {{ template_path }}
+          Deploy path: {{ deploy_path }}
+          Deploy folder: {{ deploy_folder }}
+    - name: Check if user directory exists
+      stat:
+        path: "{{ deploy_path }}"
+      register: user_dir_stat
+
+    - name: Create user directory if not exists
+      file:
+        path: "{{ deploy_path }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+        group: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+      when: not user_dir_stat.stat.exists
+
+    - name: Copy template to user directory
+      copy:
+        src: "{{ template_path }}/"
+        dest: "{{ deploy_path }}"
+        mode: '0755'
+        owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+        group: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+      register: template_copy_result
+
+    - name: Debug template copy result
+      debug:
+        var: template_copy_result
+
+    - name: Ensure test script is executable
+      file:
+        path: "{{ deploy_path }}/test/test.sh"
+        mode: '0755'
+        owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+        group: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+
+    - name: Create deploy directory
+      file:
+        path: "{{ deploy_folder }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+        group: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+
+    - name: Copy application files
+      copy:
+        src: "{{ template_path }}/app/"
+        dest: "{{ deploy_folder }}/"
+        mode: '0644'
+        owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+        group: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+
+    - name: Run test script
+      command: "{{ deploy_path }}/test/test.sh"
+      args:
+        chdir: "{{ deploy_path }}"
+      register: test_result
+      failed_when: test_result.rc != 0
+
+    - name: Create symlink to current
+      file:
+        src: "{{ deploy_folder }}"
+        dest: "{{ deploy_path }}/deploy/current"
+        state: link
+        owner: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+        group: "{{ 'newbie' if ansible_connection != 'local' else 'jenkins' }}"
+
+    - name: Get list of release directories
+      find:
+        paths: "{{ deploy_path }}/deploy"
+        patterns: "20*"
+        file_type: directory
+      register: release_dirs
+
+    - name: Remove old releases (keep only {{ max_releases }})
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      when: release_dirs.matched > (max_releases | int)
+      loop: "{{ (release_dirs.files | sort(attribute='path', reverse=true))[(max_releases | int):] }}"
+
+    - name: Check nginx status
+      service:
+        name: nginx
+        state: started
+      when: ansible_connection != 'local'
+
+    - name: Display deployment info
+      debug:
+        msg: |
+          Deployment completed successfully!
+          Timestamp: {{ deploy_timestamp }}
+          Path: {{ deploy_folder }}
+          Current symlink: {{ deploy_path }}/deploy/current

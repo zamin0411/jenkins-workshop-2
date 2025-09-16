@@ -1,0 +1,13 @@
+[local]
+localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3
+
+[remote]
+remote_server ansible_host=10.1.1.195 ansible_user=newbie
+
+[remote:vars]
+ansible_ssh_common_args='-o ConnectTimeout=30 -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyCommand="ssh -p 3333 -W %h:%p -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /root/.ssh/newbie_id_rsa zigexn@118.69.34.46" -o IdentitiesOnly=yes'
+ansible_ssh_extra_args='-o ConnectTimeout=30 -o ServerAliveInterval=60 -o ServerAliveCountMax=3'
+ansible_ssh_private_key_file=/root/.ssh/newbie_id_rsa
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3

@@ -1,0 +1,18 @@
+---
+- name: Debug variables
+  hosts: localhost
+  gather_facts: yes
+  vars:
+    deploy_timestamp: "{{ '%04d%02d%02d%02d%02d%02d' | format(ansible_date_time.year | int, ansible_date_time.month | int, ansible_date_time.day | int, ansible_date_time.hour | int, ansible_date_time.minute | int, ansible_date_time.second | int) }}"
+    deploy_user: "{{ ansible_user | default('newbie') }}"
+    deploy_path: "/usr/share/nginx/html/jenkins/{{ ansible_user_folder | default('manhg') }}"
+    template_path: "/usr/share/nginx/html/jenkins/template"
+  
+  tasks:
+    - name: Display variables
+      debug:
+        msg: |
+          deploy_timestamp: {{ deploy_timestamp }}
+          deploy_user: {{ deploy_user }}
+          deploy_path: {{ deploy_path }}
+          ansible_user: {{ ansible_user }}

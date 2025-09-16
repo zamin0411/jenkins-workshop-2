@@ -1,0 +1,95 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Deploy application to local and remote servers using Ansible</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.disc__notifier.NotifierProperty plugin="discord-notifier@1.4"/>
+    <hudson.plugins.build__blocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockUnstable>false</blockUnstable>
+    </hudson.plugins.build__blocker.BuildBlockerProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>DEPLOY_USER</name>
+          <description>Username for deployment (default: newbie)</description>
+          <defaultValue>newbie</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>MAX_RELEASES</name>
+          <description>Maximum number of releases to keep (default: 5)</description>
+          <defaultValue>5</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>DEPLOY_LOCAL</name>
+          <description>Deploy to local server</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>DEPLOY_REMOTE</name>
+          <description>Deploy to remote server</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+# Execute the deployment script
+chmod +x /usr/share/nginx/html/jenkins/deploy-script.sh
+/usr/share/nginx/html/jenkins/deploy-script.sh</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.email__ext.ExtendedEmailPublisher plugin="email-ext@2.91">
+      <recipientList>admin@example.com,dev@example.com</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.email__ext.plugins.trigger.FailureTrigger>
+          <email>
+            <recipientList>admin@example.com,dev@example.com</recipientList>
+            <subject>BUILD FAILED: $PROJECT_NAME - $BUILD_NUMBER</subject>
+            <body>Build failed for $PROJECT_NAME build #$BUILD_NUMBER. Please check Jenkins console for details.</body>
+            <sendToDevelopers>true</sendToDevelopers>
+            <sendToRequester>false</sendToRequester>
+            <includeCulprits>false</includeCulprits>
+            <sendToRecipientList>true</sendToRecipientList>
+          </email>
+        </hudson.plugins.email__ext.plugins.trigger.FailureTrigger>
+        <hudson.plugins.email__ext.plugins.trigger.SuccessTrigger>
+          <email>
+            <recipientList>admin@example.com,dev@example.com</recipientList>
+            <subject>BUILD SUCCESS: $PROJECT_NAME - $BUILD_NUMBER</subject>
+            <body>Build successful for $PROJECT_NAME build #$BUILD_NUMBER. Deployment completed successfully!</body>
+            <sendToDevelopers>true</sendToDevelopers>
+            <sendToRequester>false</sendToRequester>
+            <includeCulprits>false</includeCulprits>
+            <sendToRecipientList>true</sendToRecipientList>
+          </email>
+        </hudson.plugins.email__ext.plugins.trigger.SuccessTrigger>
+      </configuredTriggers>
+      <contentType>text/html</contentType>
+      <defaultSubject>$DEFAULT_SUBJECT</defaultSubject>
+      <defaultContent>$DEFAULT_CONTENT</defaultContent>
+      <attachmentsPattern></attachmentsPattern>
+      <presendScript></presendScript>
+      <classpath></classpath>
+      <replyTo></replyTo>
+      <saveOutput>false</saveOutput>
+      <disabled>false</disabled>
+    </hudson.plugins.email__ext.ExtendedEmailPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>

@@ -1,0 +1,30 @@
+FROM jenkins/jenkins:lts-jdk17
+
+USER root
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    openssh-client \
+    rsync \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ansible using Python virtual environment
+RUN python3 -m venv /opt/ansible \
+    && /opt/ansible/bin/pip install --upgrade pip \
+    && /opt/ansible/bin/pip install ansible==8.5.0 \
+    && ln -s /opt/ansible/bin/ansible /usr/local/bin/ansible \
+    && ln -s /opt/ansible/bin/ansible-playbook /usr/local/bin/ansible-playbook
+
+# Create ansible directory
+RUN mkdir -p /ansible
+
+# Copy ansible configuration
+COPY ansible/ /ansible/
+
+# Set permissions
+RUN chown -R jenkins:jenkins /ansible
+
+USER jenkins

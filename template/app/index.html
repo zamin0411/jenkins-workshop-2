@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Duck Pond</title>
+  <meta name="description" content="A single, simple duck‑themed landing page." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%A6%86%3C/text%3E%3C/svg%3E"/>
+  <style>
+    :root {
+      --yellow: #ffd166;
+      --orange: #ff8c42;
+      --blue: #8ecae6;
+      --deep-blue: #457b9d;
+      --pond: linear-gradient(180deg, var(--blue), #a8d7ee 50%, #e6f6ff 100%);
+      --ink: #0f172a;
+      --paper: #ffffff;
+    }
+
+    [data-theme="dark"]{
+      --paper: #0b1020;
+      --ink: #e7f2ff;
+      --pond: linear-gradient(180deg, #1f3b57, #204c6a 50%, #0b2236 100%);
+      --deep-blue: #99d6ff;
+    }
+
+    * { box-sizing: border-box }
+    html, body { height: 100% }
+    body {
+      margin: 0;
+      font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 24px }
+
+    header {
+      position: relative;
+      border-bottom: 1px solid rgb(0 0 0 / 8%);
+      padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px;
+      backdrop-filter: blur(4px);
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .2px }
+    .brand .logo { font-size: 28px }
+    .brand .name { font-size: 18px }
+
+    .toggle {
+      border: 1px solid rgb(0 0 0 / 12%);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: transform .15s ease;
+    }
+    .toggle:hover { transform: translateY(-2px) }
+
+    .hero {
+      background: var(--pond);
+      overflow: hidden;
+      border-bottom: 1px solid rgb(0 0 0 / 10%);
+    }
+
+    .hero-inner { display: grid; grid-template-columns: 1fr; gap: 28px; align-items: center; padding: 42px 24px }
+    @media (min-width: 780px){ .hero-inner { grid-template-columns: 1.2fr 1fr; padding: 72px 24px } }
+
+    h1 { font-size: clamp(32px, 5vw, 56px); margin: 0 0 8px; line-height: 1.1 }
+    .lead { font-size: clamp(16px, 2.3vw, 20px); opacity: .9 }
+
+    .cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 18px; border-radius: 999px; border: none; cursor: pointer;
+      background: var(--yellow); color: #1b2333; font-weight: 700; font-size: 16px;
+      box-shadow: 0 6px 18px rgb(0 0 0 / 12%);
+      transition: transform .15s ease, box-shadow .2s ease;
+    }
+    .cta:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgb(0 0 0 / 16%) }
+
+    /* Duck SVG */
+    .pond {
+      position: relative; height: 320px; max-width: 560px; margin: 0 auto;
+    }
+    .duck { width: 100%; height: 100% }
+
+    .bob { animation: bob 3s ease-in-out infinite }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) }
+      50% { transform: translateY(-8px) }
+    }
+
+    .ripples { position: absolute; inset: 0; pointer-events: none }
+    .ripple {
+      position: absolute; left: 50%; top: 60%; width: 60px; height: 60px; border-radius: 50%;
+      border: 2px solid rgb(255 255 255 / 55%);
+      transform: translate(-50%, -50%);
+      animation: ring 4s ease-out infinite;
+    }
+    .ripple:nth-child(2){ width: 100px; height: 100px; animation-delay: .6s }
+    .ripple:nth-child(3){ width: 150px; height: 150px; animation-delay: 1.2s }
+    @keyframes ring { from { opacity: .9; } to { opacity: 0; transform: translate(-50%, -50%) scale(1.6) } }
+
+    section { padding: 56px 24px }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px }
+    .card {
+      border: 1px solid rgb(0 0 0 / 10%);
+      background: var(--paper);
+      padding: 18px; border-radius: 16px;
+      box-shadow: 0 8px 20px rgb(0 0 0 / 6%);
+    }
+    .card h3 { margin: 0 0 6px }
+
+    footer { text-align: center; padding: 36px 24px; opacity: .8; border-top: 1px dashed rgb(0 0 0 / 12%) }
+    a { color: var(--deep-blue); text-decoration: none }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <div class="brand" aria-label="Duck Pond">
+      <div class="logo" aria-hidden="true">🦆</div>
+      <div class="name">Duck Pond</div>
+    </div>
+    <button class="toggle" id="themeToggle" aria-pressed="false" aria-label="Toggle dark mode">Dark pond</button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <div>
+          <h1>Welcome to the Duck Pond</h1>
+          <p class="lead">A peaceful place for rubber ducks and real quacks. Take a paddle through tips, facts, and fun.
+          </p>
+          <p>
+            <button class="cta" id="quackBtn">Quack! <span aria-hidden="true">🐣</span></button>
+          </p>
+        </div>
+        <div class="pond" aria-hidden="true">
+          <!-- Floating Duck SVG -->
+          <svg class="duck bob" viewBox="0 0 300 200" role="img" aria-label="rubber duck illustration">
+            <defs>
+              <radialGradient id="duckBody" cx="50%" cy="40%" r="70%">
+                <stop offset="0%" stop-color="#ffe59a"/>
+                <stop offset="100%" stop-color="var(--yellow)"/>
+              </radialGradient>
+            </defs>
+            <!-- Body -->
+            <ellipse cx="150" cy="120" rx="80" ry="50" fill="url(#duckBody)"/>
+            <!-- Tail -->
+            <path d="M80,120 q-20,-10 -25,10 q20,-8 35,2" fill="var(--yellow)"/>
+            <!-- Head -->
+            <circle cx="205" cy="85" r="35" fill="url(#duckBody)"/>
+            <!-- Beak -->
+            <path d="M232,85 q22,0 22,12 q-22,-6 -44,0 q0,-12 22,-12z" fill="var(--orange)"/>
+            <!-- Eye -->
+            <circle cx="215" cy="78" r="6" fill="#1a1a1a"/>
+            <circle cx="217" cy="76" r="2" fill="#fff"/>
+            <!-- Wing -->
+            <path d="M150,105 q40,10 20,38 q-45,8 -60,-4 q18,-28 40,-34z" fill="#ffe59a"/>
+          </svg>
+          <div class="ripples">
+            <span class="ripple"></span>
+            <span class="ripple"></span>
+            <span class="ripple"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap" id="about">
+      <h2>About Ducks</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Adaptable Swimmers</h3>
+          <p>Ducks have waterproof feathers and webbed feet that make them agile in ponds, lakes, and rivers.</p>
+        </article>
+        <article class="card">
+          <h3>Quack Facts</h3>
+          <p>Not all ducks quack! Many whistle, coo, or croak depending on their species.</p>
+        </article>
+        <article class="card">
+          <h3>Rubber Duck Debugging</h3>
+          <p>Explaining your problem to a rubber duck can help you find the solution. Try it with the button above.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap" id="gallery" aria-label="duck gallery">
+      <h2>Mini Duck Gallery</h2>
+      <div class="cards" style="font-size: 34px; text-align:center">
+        <div class="card" aria-label="duck emoji">🦆</div>
+        <div class="card" aria-label="hatching chick">🐣</div>
+        <div class="card" aria-label="chick">🐥</div>
+        <div class="card" aria-label="droplets">💧</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Made with <span aria-hidden="true">💛</span> for ducks • <a href="#about">About</a> • <a href="#gallery">Gallery</a></small>
+  </footer>
+
+  <script>
+    // Dark pond toggle
+    const toggle = document.getElementById('themeToggle');
+    toggle.addEventListener('click', () => {
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+      toggle.setAttribute('aria-pressed', String(!dark));
+    });
+
+    // Friendly "quack" bubble
+    const btn = document.getElementById('quackBtn');
+    btn.addEventListener('click', () => {
+      const bubble = document.createElement('div');
+      bubble.textContent = 'Quack!';
+      Object.assign(bubble.style, {
+        position: 'fixed',
+        left: (btn.getBoundingClientRect().left + btn.offsetWidth / 2) + 'px',
+        top: (btn.getBoundingClientRect().top - 10) + 'px',
+        transform: 'translate(-50%, -100%)',
+        padding: '8px 12px',
+        background: 'var(--yellow)',
+        color: '#1b2333',
+        borderRadius: '999px',
+        boxShadow: '0 6px 14px rgba(0,0,0,.15)',
+        zIndex: 10,
+        pointerEvents: 'none',
+        whiteSpace: 'nowrap',
+        fontWeight: '800'
+      });
+      document.body.appendChild(bubble);
+      setTimeout(() => bubble.remove(), 900);
+    });
+  </script>
+</body>
+</html>
